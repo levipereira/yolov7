@@ -18,6 +18,28 @@ from utils.plots import plot_images, output_to_target, plot_study_txt
 from utils.torch_utils import select_device, time_synchronized, TracedModel
 
 
+def replace_image_ids(pred_json, custom_annotation_json):
+    # Load data from custom annotation JSON file
+    with open(custom_annotation_json, 'r') as f:
+        custom_data = json.load(f)
+
+    # Create a dictionary mapping file names to image IDs
+    file_name_to_id = {img['file_name']: img['id'] for img in custom_data['images']}
+
+    # Load data from predictions JSON file
+    with open(pred_json, 'r') as f:
+        pred_data = json.load(f)
+
+    # Replace image_ids in predictions
+    for pred in pred_data:
+        
+        file_name = pred['image_id'] + '.jpg'  # Assuming image file names in custom_dataset_annotation have extension .jpg
+        if file_name in file_name_to_id:
+            pred['image_id'] = file_name_to_id[file_name]
+    # Save the updated predictions
+    with open(pred_json, 'w') as f:
+        json.dump(pred_data, f, indent=4)
+
 def test(data,
          weights=None,
          batch_size=32,
@@ -73,6 +95,19 @@ def test(data,
         is_coco = data.endswith('coco.yaml')
         with open(data) as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
+   
+        anno_json='./coco/annotations/instances_val2017.json'
+        custom_dataset=False
+        if not is_coco:
+            # For custom dataset, get the annotations json path from the YAML file
+            val_root_dir = os.path.join(os.path.dirname(data['val']), 'annotations_coco')
+            anno_json = os.path.join(val_root_dir, 'custom_dataset_annotation.json')
+            # If the custom annotation file doesn't exist, fallback to the default COCO annotations
+            if not os.path.exists(anno_json):
+                anno_json = './coco/annotations/instances_val2017.json'
+            else:
+                custom_dataset=True
+                
     check_dataset(data)  # check
     nc = 1 if single_cls else int(data['nc'])  # number of classes
     iouv = torch.linspace(0.5, 0.95, 10).to(device)  # iou vector for mAP@0.5:0.95
@@ -171,7 +206,7 @@ def test(data,
                 box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
                 for p, b in zip(pred.tolist(), box.tolist()):
                     jdict.append({'image_id': image_id,
-                                  'category_id': coco91class[int(p[5])] if is_coco else int(p[5]),
+                                  'category_id': coco91class[int(p[5])] if is_coco or custom_dataset else int(p[5]),
                                   'bbox': [round(x, 3) for x in b],
                                   'score': round(p[4], 5)})
 
@@ -254,11 +289,16 @@ def test(data,
     # Save JSON
     if save_json and len(jdict):
         w = Path(weights[0] if isinstance(weights, list) else weights).stem if weights is not None else ''  # weights
-        anno_json = './coco/annotations/instances_val2017.json'  # annotations json
+        #anno_json = './coco/annotations/instances_val2017.json'  # annotations json
+
         pred_json = str(save_dir / f"{w}_predictions.json")  # predictions json
         print('\nEvaluating pycocotools mAP... saving %s...' % pred_json)
         with open(pred_json, 'w') as f:
             json.dump(jdict, f)
+
+        if custom_dataset:
+            print('Processing %s to make it compatible with the annotation file.' % pred_json)
+            replace_image_ids(pred_json,anno_json )
 
         try:  # https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb
             from pycocotools.coco import COCO

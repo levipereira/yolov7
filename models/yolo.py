@@ -75,10 +75,11 @@ class Detect(nn.Module):
             out = (torch.cat(z, 1), x)
 
         return out
-
+    ## bug https://github.com/WongKinYiu/yolov7/issues/270#issuecomment-1194835125
     @staticmethod
     def _make_grid(nx=20, ny=20):
-        yv, xv = torch.meshgrid([torch.arange(ny), torch.arange(nx)])
+        yv, xv = torch.meshgrid(torch.arange(ny), torch.arange(nx), indexing='ij')
+        #yv, xv = torch.meshgrid(torch.arange(ny), torch.arange(nx))
         return torch.stack((xv, yv), 2).view((1, 1, ny, nx, 2)).float()
 
     def convert(self, z):
@@ -189,9 +190,11 @@ class IDetect(nn.Module):
             self.m[i].bias *= self.im[i].implicit.reshape(c2)
             self.m[i].weight *= self.im[i].implicit.transpose(0,1)
             
+    ## bug https://github.com/WongKinYiu/yolov7/issues/270#issuecomment-1194835125
     @staticmethod
     def _make_grid(nx=20, ny=20):
-        yv, xv = torch.meshgrid([torch.arange(ny), torch.arange(nx)])
+        yv, xv = torch.meshgrid(torch.arange(ny), torch.arange(nx), indexing='ij')
+        #yv, xv = torch.meshgrid(torch.arange(ny), torch.arange(nx))
         return torch.stack((xv, yv), 2).view((1, 1, ny, nx, 2)).float()
 
     def convert(self, z):
@@ -302,9 +305,11 @@ class IKeypoint(nn.Module):
 
         return x if self.training else (torch.cat(z, 1), x)
 
+    ## bug https://github.com/WongKinYiu/yolov7/issues/270#issuecomment-1194835125
     @staticmethod
     def _make_grid(nx=20, ny=20):
-        yv, xv = torch.meshgrid([torch.arange(ny), torch.arange(nx)])
+        yv, xv = torch.meshgrid(torch.arange(ny), torch.arange(nx), indexing='ij')
+        #yv, xv = torch.meshgrid(torch.arange(ny), torch.arange(nx))
         return torch.stack((xv, yv), 2).view((1, 1, ny, nx, 2)).float()
 
 
@@ -412,9 +417,11 @@ class IAuxDetect(nn.Module):
             self.m[i].bias *= self.im[i].implicit.reshape(c2)
             self.m[i].weight *= self.im[i].implicit.transpose(0,1)
 
+    ## bug https://github.com/WongKinYiu/yolov7/issues/270#issuecomment-1194835125
     @staticmethod
     def _make_grid(nx=20, ny=20):
-        yv, xv = torch.meshgrid([torch.arange(ny), torch.arange(nx)])
+        yv, xv = torch.meshgrid(torch.arange(ny), torch.arange(nx), indexing='ij')
+        #yv, xv = torch.meshgrid(torch.arange(ny), torch.arange(nx))
         return torch.stack((xv, yv), 2).view((1, 1, ny, nx, 2)).float()
 
     def convert(self, z):
@@ -499,9 +506,11 @@ class IBin(nn.Module):
 
         return x if self.training else (torch.cat(z, 1), x)
 
+    ## bug https://github.com/WongKinYiu/yolov7/issues/270#issuecomment-1194835125
     @staticmethod
     def _make_grid(nx=20, ny=20):
-        yv, xv = torch.meshgrid([torch.arange(ny), torch.arange(nx)])
+        yv, xv = torch.meshgrid(torch.arange(ny), torch.arange(nx), indexing='ij')
+        #yv, xv = torch.meshgrid(torch.arange(ny), torch.arange(nx))
         return torch.stack((xv, yv), 2).view((1, 1, ny, nx, 2)).float()
 
 
