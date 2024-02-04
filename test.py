@@ -17,29 +17,6 @@ from utils.metrics import ap_per_class, ConfusionMatrix
 from utils.plots import plot_images, output_to_target, plot_study_txt
 from utils.torch_utils import select_device, time_synchronized, TracedModel
 
-
-def replace_image_ids(pred_json, custom_annotation_json):
-    # Load data from custom annotation JSON file
-    with open(custom_annotation_json, 'r') as f:
-        custom_data = json.load(f)
-
-    # Create a dictionary mapping file names to image IDs
-    file_name_to_id = {img['file_name']: img['id'] for img in custom_data['images']}
-
-    # Load data from predictions JSON file
-    with open(pred_json, 'r') as f:
-        pred_data = json.load(f)
-
-    # Replace image_ids in predictions
-    for pred in pred_data:
-        
-        file_name = pred['image_id'] + '.jpg'  # Assuming image file names in custom_dataset_annotation have extension .jpg
-        if file_name in file_name_to_id:
-            pred['image_id'] = file_name_to_id[file_name]
-    # Save the updated predictions
-    with open(pred_json, 'w') as f:
-        json.dump(pred_data, f, indent=4)
-
 def test(data,
          weights=None,
          batch_size=32,
@@ -295,10 +272,6 @@ def test(data,
         print('\nEvaluating pycocotools mAP... saving %s...' % pred_json)
         with open(pred_json, 'w') as f:
             json.dump(jdict, f)
-
-        if custom_dataset:
-            print('Processing %s to make it compatible with the annotation file.' % pred_json)
-            replace_image_ids(pred_json,anno_json )
 
         try:  # https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb
             from pycocotools.coco import COCO
