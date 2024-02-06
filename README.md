@@ -1,5 +1,15 @@
-# Official YOLOv7
+# Official YOLOv7 (with Some Enhancements)
 
+Changes on this repo:
+- Updated test.py to support the use of the pycocotools tool with custom datasets.
+- Modified models/yolo.py to add support for PyTorch 1.14. Fixed torch.meshgrid warning as per https://github.com/WongKinYiu/yolov7/issues/270#issuecomment-1194835125.
+- Revised train.py to remove automatic model download. 
+
+ Please refer to the commits for further details.
+
+
+
+#
 Implementation of paper - [YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors](https://arxiv.org/abs/2207.02696)
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/yolov7-trainable-bag-of-freebies-sets-new/real-time-object-detection-on-coco)](https://paperswithcode.com/sota/real-time-object-detection-on-coco?p=yolov7-trainable-bag-of-freebies-sets-new)
